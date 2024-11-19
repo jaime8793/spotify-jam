@@ -1,4 +1,4 @@
-import { AudioLines, Disc3, Home, LibraryIcon, Search } from "lucide-react";
+import { AudioLines, Disc3, Home, LibraryIcon, LogInIcon, Search } from "lucide-react";
 import { Link } from "react-router-dom";
 
 import {
@@ -36,9 +36,10 @@ const items = [
   },
   {
     title: "Your Top Charts",
-    url: "#",
+    url: "/",
     icon: AudioLines,
   },
+ 
 ];
 
 export function AppSidebar() {
