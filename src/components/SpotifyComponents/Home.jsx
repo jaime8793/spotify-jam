@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
+import { Button } from "../ui/button";
 import axios from "axios";
 
 function Home() {
   // Fetch data from the backend
+  const { userData, setUserData } = useState(null);
   useEffect(() => {
     // Trigger Spotify authentication
     axios
@@ -14,17 +16,18 @@ function Home() {
         console.error("Error authenticating:", error);
       });
   }, []);
-  useEffect(() => {
-    // Trigger Spotify Data Exchange
+
+  // Trigger Spotify Data Exchange
+  function getUserData() {
     axios
       .get("http://localhost:3003/api/v1/getUserSpotify")
-      .then((userData) => {
-        console.log("User Got!!!", userData.data);
+      .then((response) => {
+        setUserData(response.data);
       })
       .catch((error) => {
         console.error("Error authenticating:", error);
       });
-  }, []);
+  }
 
   return (
     <>
@@ -35,6 +38,7 @@ function Home() {
           <a href="http://localhost:3003/api/auth/spotify">
             Authenticate with Spotify
           </a>
+          <Button onClick={getUserData} />
         </div>
       </div>
     </>
