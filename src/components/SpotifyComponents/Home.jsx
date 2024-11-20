@@ -4,16 +4,22 @@ import axios from "axios";
 import { LogsIcon } from "lucide-react";
 import SpotifyWebApi from "spotify-web-api-js";
 
+const spotifyApi = new SpotifyWebApi();
+
 function Home() {
-  // Fetch data from the backend
-  const { userData, setUserData } = useState(null);
-  const { accessToken, setAccessToken } = useState("");
-  const spotifyApi = new SpotifyWebApi();
+  const [accessToken, setAccessToken] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (accessToken) {
+      spotifyApi.setAccessToken(accessToken);
+    }
+  }, [accessToken]);
 
   function getAuthentiation() {
-    // Trigger Spotify authentication
     axios
-      .get("http://localhost:3003/api/auth/spotify") // Include cookies
+      .get("http://localhost:3003/api/auth/spotify", { withCredentials: true })
       .then((response) => {
         console.log("Authenticated:", response.data);
       })
@@ -21,40 +27,34 @@ function Home() {
         console.error("Error authenticating:", error);
       });
   }
+
   function getSessionData() {
-    // Trigger Spotify authentication
+    setIsLoading(true);
+    setError(null);
+
     axios
-      .get("http://localhost:3003/api/session", { withCredentials: true }) // Include cookies
+      .get("http://localhost:3003/api/session", { withCredentials: true })
       .then((response) => {
         console.log("Session Data", response.data);
-        console.log("Session Data", response.data.accessToken);
         setAccessToken(response.data.accessToken);
-        spotifyApi.setAccessToken(response.data.accessToken);
       })
       .catch((error) => {
-        console.error("Error authenticating:", error);
-      });
+        console.error("Error accessing access token:", error);
+        setError("Failed to fetch session data.");
+      })
+      .finally(() => setIsLoading(false));
   }
-  // Trigger Spotify Data Exchange
+
   function getUserData() {
-    /*axios
-      .get("http://localhost:3003/api/v1/getUserSpotify")
-      .then((response) => {
-        setUserData(JSON.parse(response.data));
-      })
-      .catch((error) => {
-        console.error("Error authenticating:", error);
-      });*/
-    spotifyApi
-      .getUserPlaylists() // note that we don't pass a user id
-      .then(
-        function (data) {
-          console.log("User playlists", data);
-        },
-        function (err) {
-          console.error(err);
-        }
-      );
+    if (!accessToken) {
+      console.error("Access token is missing. Authenticate first.");
+      return;
+    }
+
+    spotifyApi.getUserPlaylists().then(
+      (data) => console.log("User playlists:", data),
+      (err) => console.error("Error fetching playlists:", err)
+    );
   }
 
   return (
@@ -63,24 +63,20 @@ function Home() {
       <div className="flex flex-col">
         <div>
           <h1>Spotify Integration</h1>
-          <a href="http://localhost:3003/api/auth/spotify">
-            Authenticate with Spotify
-          </a>
-          <a href="http://localhost:3003/api/status/spotify">
-            Get Access Token
-          </a>
           <Button onClick={getAuthentiation}>
             <LogsIcon />
-            Get Thy Authentication
-          </Button>
-          <Button onClick={getUserData}>
-            <LogsIcon />
-            Get Thy Data
+            Authenticate with Spotify
           </Button>
           <Button onClick={getSessionData}>
             <LogsIcon />
-            Get Thy Access Session
+            Fetch Access Token
           </Button>
+          <Button onClick={getUserData}>
+            <LogsIcon />
+            Fetch User Playlists
+          </Button>
+          {isLoading && <p>Loading...</p>}
+          {error && <p className="error">{error}</p>}
         </div>
       </div>
     </>
