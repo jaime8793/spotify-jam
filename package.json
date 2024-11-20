@@ -23,6 +23,7 @@
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.28.0",
     "shadcn-ui": "^0.9.3",
+    "spotify-web-api-js": "^1.5.2",
     "tailwind-merge": "^2.5.4",
     "tailwindcss-animate": "^1.0.7"
   },
