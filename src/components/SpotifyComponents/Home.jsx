@@ -10,6 +10,7 @@ function Home() {
   const [accessToken, setAccessToken] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [spotifyData, setSpotifyData] = useState(null);
 
   useEffect(() => {
     if (accessToken) {
@@ -52,7 +53,8 @@ function Home() {
     }
 
     spotifyApi.getUserPlaylists().then(
-      (data) => console.log("User playlists:", data),
+      //(data) => console.log("User playlists:", data),
+      (data) => setSpotifyData(data),
       (err) => console.error("Error fetching playlists:", err)
     );
   }
@@ -77,6 +79,17 @@ function Home() {
           </Button>
           {isLoading && <p>Loading...</p>}
           {error && <p className="error">{error}</p>}
+          {spotifyData
+            ? spotifyData.items.map((playlist, id) => {
+               // console.log(playlist.images[0]);
+                return (
+                  <div key={id}>
+                    {playlist.name}
+                    <img src={playlist.images[0].url} />
+                  </div>
+                );
+              }) /*console.log(spotifyData)*/
+            : `Sit Tight While We Get thy data`}
         </div>
       </div>
     </>
