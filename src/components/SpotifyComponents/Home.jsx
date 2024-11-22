@@ -3,6 +3,8 @@ import { Button } from "../ui/button";
 import axios from "axios";
 import { LogsIcon } from "lucide-react";
 import SpotifyWebApi from "spotify-web-api-js";
+import { Skeleton } from "../ui/skeleton";
+import AlbumArtWork from "./AlbumArtwork";
 
 const spotifyApi = new SpotifyWebApi();
 
@@ -22,6 +24,7 @@ function Home() {
     axios
       .get("http://localhost:3003/api/auth/spotify", { withCredentials: true })
       .then((response) => {
+        getSessionData();
         console.log("Authenticated:", response.data);
       })
       .catch((error) => {
@@ -79,17 +82,33 @@ function Home() {
           </Button>
           {isLoading && <p>Loading...</p>}
           {error && <p className="error">{error}</p>}
-          {spotifyData
-            ? spotifyData.items.map((playlist, id) => {
-               // console.log(playlist.images[0]);
-                return (
-                  <div key={id}>
-                    {playlist.name}
-                    <img src={playlist.images[0].url} />
-                  </div>
-                );
-              }) /*console.log(spotifyData)*/
-            : `Sit Tight While We Get thy data`}
+          {spotifyData ? (
+            spotifyData.items.map((playlist, id) => {
+              // console.log(playlist.images[0]);
+              return (
+                <div key={id}>
+                  {playlist.name}
+                  <img src={playlist.images[0].url} />
+                </div>
+              );
+            }) /*console.log(spotifyData)*/
+          ) : (
+            <div className="flex flex-col space-y-3">
+              <Skeleton className="h-[125px] w-[250px] rounded-xl" />
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-[250px]" />
+                <Skeleton className="h-4 w-[200px]" />
+              </div>
+            </div>
+          )}
+          {spotifyData ? (
+            <>
+              <p>This is the artwork</p>
+              <AlbumArtWork playlists={spotifyData.items} />
+            </>
+          ) : (
+            `we will get it`
+          )}
         </div>
       </div>
     </>
