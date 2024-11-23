@@ -83,15 +83,7 @@ function Home() {
           {isLoading && <p>Loading...</p>}
           {error && <p className="error">{error}</p>}
           {spotifyData ? (
-            spotifyData.items.map((playlist, id) => {
-              // console.log(playlist.images[0]);
-              return (
-                <div key={id}>
-                  {playlist.name}
-                  <img src={playlist.images[0].url} />
-                </div>
-              );
-            }) /*console.log(spotifyData)*/
+           <p>Playlist Got</p>
           ) : (
             <div className="flex flex-col space-y-3">
               <Skeleton className="h-[125px] w-[250px] rounded-xl" />
@@ -104,7 +96,7 @@ function Home() {
           {spotifyData ? (
             <>
               <p>This is the artwork</p>
-              <AlbumArtWork playlists={spotifyData.items} />
+              <AlbumArtWork playlists={spotifyData.items} accessToken={accessToken} />
             </>
           ) : (
             `we will get it`

@@ -1,24 +1,21 @@
-import { PlusCircle } from "lucide-react";
 
-import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuSeparator,
-  ContextMenuSub,
-  ContextMenuSubContent,
-  ContextMenuSubTrigger,
-  ContextMenuTrigger,
-} from "../ui/context-menu";
-import { useState } from "react";
+
 
 function AlbumArtWork({ playlists }) {
+  console.log("Received Playlists:", playlists);
+  console.log("Received Access Token:");
   return (
     <div>
-      {playlists.map((playlist) => {
-        <p>{playlist.name}</p>;
+      {playlists.map((playlist, id) => {
+        return (
+          <div key={id}>
+            <p>Playlist name:{playlist.name}</p>
+            <img src={playlist.images[0].url} />
+          </div>
+        );
       })}
     </div>
   );
 }
+
 export default AlbumArtWork;
