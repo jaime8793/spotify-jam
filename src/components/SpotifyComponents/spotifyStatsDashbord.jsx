@@ -1,15 +1,79 @@
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
-import { ScrollArea } from "../ui/scroll-area";
-import { Badge } from "../ui/badge";
-import { AudioLines, Disc3 } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
+import { AudioLines, Disc3, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
-function SpotifyStats({ spotifyApi, accessToken }) {
+function SpotifyStats({ spotifyApi, accessToken, onTokenRefresh }) {
   const [topArtists, setTopArtists] = useState([]);
   const [topTracks, setTopTracks] = useState([]);
+  const [audioFeatures, setAudioFeatures] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  const fetchSpotifyStats = async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      // Top Artists
+      const artistsResponse = await spotifyApi.getMyTopArtists({
+        limit: 30,
+        time_range: "medium_term",
+      });
+      setTopArtists(artistsResponse.items);
+
+      // Top Tracks with Audio Features
+      const tracksResponse = await spotifyApi.getMyTopTracks({
+        limit: 30,
+        time_range: "medium_term",
+      });
+      const tracks = tracksResponse.items;
+      setTopTracks(tracks);
+
+      // Fetch Audio Features
+      const trackIds = tracks.map((track) => track.id);
+      const featuresResponse = await spotifyApi.getAudioFeaturesForTracks(
+        trackIds
+      );
+      const processedFeatures = featuresResponse.audio_features.map(
+        (feature, index) => ({
+          name: tracks[index].name,
+          danceability: feature.danceability * 100,
+          energy: feature.energy * 100,
+          valence: feature.valence * 100,
+        })
+      );
+      setAudioFeatures(processedFeatures);
+    } catch (err) {
+      console.error("Spotify Stats Error:", err);
+
+      // Specific error handling
+      if (err.status === 401) {
+        // Token expired
+        setError({
+          type: "token_expired",
+          message: "Access token has expired. Please refresh.",
+        });
+      } else {
+        setError({
+          type: "fetch_error",
+          message: err.message || "Failed to fetch Spotify statistics",
+        });
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (accessToken) {
@@ -18,96 +82,95 @@ function SpotifyStats({ spotifyApi, accessToken }) {
     }
   }, [accessToken]);
 
-  const fetchSpotifyStats = async () => {
-    setIsLoading(true);
-    try {
-      // Fetch top artists
-      const artistsResponse = await spotifyApi.getMyTopArtists({
-        limit: 10,
-        time_range: "medium_term",
-      });
-      setTopArtists(artistsResponse.items);
-
-      // Fetch top tracks
-      const tracksResponse = await spotifyApi.getMyTopTracks({
-        limit: 10,
-        time_range: "medium_term",
-      });
-      setTopTracks(tracksResponse.items);
-    } catch (err) {
-      console.error("Error fetching Spotify stats:", err);
-      setError("Could not fetch Spotify statistics");
-    } finally {
-      setIsLoading(false);
+  const handleTokenRefresh = () => {
+    if (onTokenRefresh) {
+      onTokenRefresh();
     }
   };
 
-  const renderStatCard = (title, items, renderItem) => (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          {title === "Top Artists" ? <Disc3 /> : <AudioLines />}
-          {title}
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <ScrollArea className="h-[300px] w-full">
-          {items.map((item, index) => renderItem(item, index))}
-        </ScrollArea>
-      </CardContent>
-    </Card>
-  );
+  const renderErrorAlert = () => {
+    if (!error) return null;
 
-  const renderArtistItem = (artist, index) => (
-    <div
-      key={artist.id}
-      className="flex items-center space-x-4 p-2 hover:bg-gray-100"
-    >
-      <img
-        src={artist.images[0]?.url || "/placeholder-artist.png"}
-        alt={artist.name}
-        className="w-12 h-12 rounded-full"
-      />
-      <div>
-        <p className="font-semibold">{artist.name}</p>
-        <Badge variant="secondary">{index + 1}</Badge>
-      </div>
-    </div>
-  );
+    return (
+      <Alert variant="destructive">
+        <AlertTitle>
+          {error.type === "token_expired" ? "Token Expired" : "Error"}
+        </AlertTitle>
+        <AlertDescription>
+          {error.message}
+          {error.type === "token_expired" && (
+            <Button onClick={handleTokenRefresh} className="ml-2" size="sm">
+              <RefreshCw className="mr-2 h-4 w-4" /> Refresh Token
+            </Button>
+          )}
+        </AlertDescription>
+      </Alert>
+    );
+  };
 
-  const renderTrackItem = (track, index) => (
-    <div
-      key={track.id}
-      className="flex items-center space-x-4 p-2 hover:bg-gray-100"
-    >
-      <img
-        src={track.album.images[0]?.url || "/placeholder-track.png"}
-        alt={track.name}
-        className="w-12 h-12 rounded"
-      />
-      <div>
-        <p className="font-semibold">{track.name}</p>
-        <p className="text-sm text-gray-500">{track.artists[0].name}</p>
-        <Badge variant="secondary">{index + 1}</Badge>
-      </div>
-    </div>
+  const AudioFeaturesChart = () => (
+    <ResponsiveContainer width="100%" height={300}>
+      <BarChart data={audioFeatures}>
+        <XAxis dataKey="name" />
+        <YAxis />
+        <Tooltip />
+        <Bar dataKey="danceability" fill="#8884d8" name="Danceability" />
+        <Bar dataKey="energy" fill="#82ca9d" name="Energy" />
+        <Bar dataKey="valence" fill="#ffc658" name="Valence" />
+      </BarChart>
+    </ResponsiveContainer>
   );
-
-  if (isLoading) return <div>Loading Spotify stats...</div>;
-  if (error) return <div>{error}</div>;
 
   return (
     <div className="space-y-4">
+      {renderErrorAlert()}
+
       <Tabs defaultValue="artists" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="artists">Top Artists</TabsTrigger>
           <TabsTrigger value="tracks">Top Tracks</TabsTrigger>
+          <TabsTrigger value="features">Track Features</TabsTrigger>
         </TabsList>
+
         <TabsContent value="artists">
-          {renderStatCard("Top Artists", topArtists, renderArtistItem)}
+          {/* Artists List */}
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            {topArtists.map((artist, index) => (
+              <div key={artist.id} className="text-center">
+                <img
+                  src={artist.images[0]?.url}
+                  alt={artist.name}
+                  className="w-full rounded-lg"
+                />
+                <p className="mt-2">{artist.name}</p>
+              </div>
+            ))}
+          </div>
         </TabsContent>
+
         <TabsContent value="tracks">
-          {renderStatCard("Top Tracks", topTracks, renderTrackItem)}
+          {/* Tracks List */}
+          <div className="space-y-2">
+            {topTracks.map((track, index) => (
+              <div key={track.id} className="flex items-center space-x-4">
+                <img
+                  src={track.album.images[0]?.url}
+                  alt={track.name}
+                  className="w-16 h-16 rounded"
+                />
+                <div>
+                  <p>{track.name}</p>
+                  <p className="text-sm text-gray-500">
+                    {track.artists[0].name}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="features">
+          <AudioFeaturesChart />
         </TabsContent>
       </Tabs>
     </div>

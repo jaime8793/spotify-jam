@@ -59,6 +59,28 @@ function Home() {
     );
   }
 
+  function onTokenRefresh() {
+    if (!accessToken) {
+      console.error("Access token is missing. Cannot refresh token.");
+      return;
+    }
+
+    axios
+      .post("http://localhost:3003/api/refresh-token", {
+        refresh_token: "your-refresh-token",
+      })
+      .then((response) => {
+        const { access_token } = response.data;
+        spotifyApi.setAccessToken(access_token); // Update Spotify API instance
+        setAccessToken(access_token); // Update state
+        console.log("Token refreshed successfully");
+      })
+      .catch((error) => {
+        console.error("Error refreshing token:", error);
+      });
+  }
+
+
   return (
     <div className="container mx-auto p-4">
       <div className="flex flex-col space-y-4">
@@ -86,7 +108,11 @@ function Home() {
 
         {/* Spotify Stats Component - Conditionally Rendered */}
         {isAuthenticated && (
-          <SpotifyStats spotifyApi={spotifyApi} accessToken={accessToken} />
+          <SpotifyStats
+            spotifyApi={spotifyApi}
+            accessToken={accessToken}
+            onTokenRefresh={onTokenRefresh}
+          />
         )}
 
         {/* Existing Playlist Rendering */}
