@@ -9,9 +9,10 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { AudioLines, Disc3, RefreshCw } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import TrackFeaturesRadarChart from "./nivoRadar";
 
 function SpotifyStats({ spotifyApi, accessToken, onTokenRefresh }) {
   const [topArtists, setTopArtists] = useState([]);
@@ -121,6 +122,11 @@ function SpotifyStats({ spotifyApi, accessToken, onTokenRefresh }) {
     </ResponsiveContainer>
   );
 
+  const radarChartData = audioFeatures.map((feature) => ({
+    feature: feature.name,
+    value: (feature.danceability + feature.energy + feature.valence) / 3, // Combine features if necessary
+  }));
+
   return (
     <div className="space-y-4">
       {renderErrorAlert()}
@@ -184,7 +190,16 @@ function SpotifyStats({ spotifyApi, accessToken, onTokenRefresh }) {
         </TabsContent>
 
         <TabsContent value="features">
-          <AudioFeaturesChart />
+          <div className="space-y-8">
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Bar Chart</h3>
+              <AudioFeaturesChart />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Radar Chart</h3>
+              <TrackFeaturesRadarChart data={radarChartData} />
+            </div>
+          </div>
         </TabsContent>
       </Tabs>
     </div>
