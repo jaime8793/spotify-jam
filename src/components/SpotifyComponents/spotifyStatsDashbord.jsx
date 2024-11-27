@@ -135,14 +135,21 @@ function SpotifyStats({ spotifyApi, accessToken, onTokenRefresh }) {
         <TabsContent value="artists">
           {/* Artists List */}
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            {topArtists.map((artist, index) => (
-              <div key={artist.id} className="text-center">
-                <img
-                  src={artist.images[0]?.url}
-                  alt={artist.name}
-                  className="w-full rounded-lg"
-                />
-                <p className="mt-2">{artist.name}</p>
+            {topArtists.map((artist) => (
+              <div
+                key={artist.id}
+                className="group text-center transition-transform transform hover:scale-105 hover:shadow-lg bg-white rounded-lg overflow-hidden border border-gray-200 hover:border-spotify-green aspect-square"
+              >
+                <div className="w-full h-full flex flex-col items-center justify-center">
+                  <img
+                    src={artist.images[0]?.url}
+                    alt={artist.name}
+                    className="w-full h-full object-cover rounded-t-lg"
+                  />
+                  <p className="mt-2 p-2 font-medium text-gray-800 group-hover:text-spotify-green">
+                    {artist.name}
+                  </p>
+                </div>
               </div>
             ))}
           </div>
@@ -150,19 +157,26 @@ function SpotifyStats({ spotifyApi, accessToken, onTokenRefresh }) {
 
         <TabsContent value="tracks">
           {/* Tracks List */}
-          <div className="space-y-2">
-            {topTracks.map((track, index) => (
-              <div key={track.id} className="flex items-center space-x-4">
-                <img
-                  src={track.album.images[0]?.url}
-                  alt={track.name}
-                  className="w-16 h-16 rounded"
-                />
-                <div>
-                  <p>{track.name}</p>
-                  <p className="text-sm text-gray-500">
-                    {track.artists[0].name}
-                  </p>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            {topTracks.map((track) => (
+              <div
+                key={track.id}
+                className="group text-center transition-transform transform hover:scale-105 hover:shadow-lg bg-white rounded-lg overflow-hidden border border-gray-200 hover:border-spotify-green aspect-square"
+              >
+                <div className="w-full h-full flex flex-col items-center justify-center">
+                  <img
+                    src={track.album.images[0]?.url}
+                    alt={track.name}
+                    className="w-full h-full object-cover rounded-t-lg"
+                  />
+                  <div className="p-2">
+                    <p className="font-medium text-gray-800 group-hover:text-spotify-green">
+                      {track.name}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      {track.artists[0]?.name}
+                    </p>
+                  </div>
                 </div>
               </div>
             ))}
