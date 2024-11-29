@@ -20,7 +20,7 @@ function Home() {
     axios
       .get("http://localhost:3003/api/auth/spotify", { withCredentials: true })
       .then((response) => {
-        getSessionData();
+        //getSessionData();
         console.log("Authenticated:", response.data);
       })
       .catch((error) => {
