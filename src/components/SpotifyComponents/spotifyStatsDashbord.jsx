@@ -11,7 +11,8 @@ const SpotifyStats = ({ spotifyApi, accessToken, onTokenRefresh }) => {
   const [error, setError] = useState(null);
   const [selectedTimeRange, setSelectedTimeRange] = useState("long_term");
   const [activeTab, setActiveTab] = useState("artists");
-
+  // we are so back
+  
   useEffect(() => {
     if (accessToken) {
       spotifyApi.setAccessToken(accessToken);
