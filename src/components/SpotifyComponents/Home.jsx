@@ -3,7 +3,6 @@ import { Button } from "../ui/button";
 import axios from "axios";
 import { LogsIcon } from "lucide-react";
 import SpotifyWebApi from "spotify-web-api-js";
-import AlbumArtWork from "./AlbumArtwork";
 import SpotifyStats from "./spotifyStatsDashbord"; // Import the new component
 
 const spotifyApi = new SpotifyWebApi();
@@ -12,22 +11,7 @@ function Home() {
   const [accessToken, setAccessToken] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [spotifyData, setSpotifyData] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-  // Existing authentication and data fetching methods remain the same
-  function getAuthentiation() {
-    axios
-      .get("http://localhost:3003/api/auth/spotify", { withCredentials: true })
-      .then((response) => {
-        //getSessionData();
-        //console.log("working");
-        console.log("Authenticated:", response.data);
-      })
-      .catch((error) => {
-        console.error("Error authenticating:", error);
-      });
-  }
 
   function getSessionData() {
     setIsLoading(true);
@@ -46,18 +30,6 @@ function Home() {
         setError("Failed to fetch session data.");
       })
       .finally(() => setIsLoading(false));
-  }
-
-  function getUserData() {
-    if (!accessToken) {
-      console.error("Access token is missing. Authenticate first.");
-      return;
-    }
-
-    spotifyApi.getUserPlaylists().then(
-      (data) => setSpotifyData(data),
-      (err) => console.error("Error fetching playlists:", err)
-    );
   }
 
   function onTokenRefresh() {
@@ -100,10 +72,6 @@ function Home() {
             <LogsIcon className="mr-2" />
             Fetch Access Token
           </Button>
-          <Button onClick={getUserData}>
-            <LogsIcon className="mr-2" />
-            Fetch User Playlists
-          </Button>
         </div>
 
         {/* Loading and Error States */}
@@ -117,17 +85,6 @@ function Home() {
             accessToken={accessToken}
             onTokenRefresh={onTokenRefresh}
           />
-        )}
-
-        {/* Existing Playlist Rendering */}
-        {spotifyData && (
-          <div>
-            <h2 className="text-xl font-semibold mb-4">Your Playlists</h2>
-            <AlbumArtWork
-              playlists={spotifyData.items}
-              accessToken={accessToken}
-            />
-          </div>
         )}
       </div>
     </div>
