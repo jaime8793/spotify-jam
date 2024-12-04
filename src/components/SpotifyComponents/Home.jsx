@@ -21,6 +21,7 @@ function Home() {
       .get("http://localhost:3003/api/auth/spotify", { withCredentials: true })
       .then((response) => {
         //getSessionData();
+        //console.log("working");
         console.log("Authenticated:", response.data);
       })
       .catch((error) => {
@@ -80,7 +81,6 @@ function Home() {
       });
   }
 
-
   return (
     <div className="container mx-auto p-4">
       <div className="flex flex-col space-y-4">
@@ -88,7 +88,11 @@ function Home() {
 
         {/* Authentication Buttons */}
         <div className="flex space-x-2">
-          <Button onClick={getAuthentiation}>
+          <Button
+            onClick={() => {
+              window.location.href = "http://localhost:3003/api/auth/spotify";
+            }}
+          >
             <LogsIcon className="mr-2" />
             Authenticate with Spotify
           </Button>
